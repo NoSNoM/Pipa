@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestionale studio Dott.ssa Francesca Mola</title>
+
+  <!-- Google Font -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2&display=swap">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png">
+
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- FileSaver.js -->
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <!-- Docx.js -->
+  <script src="https://cdn.jsdelivr.net/npm/docx@7.2.1/build/index.umd.js"></script>
+
+  <style>
+    body {
+      font-family: 'Baloo 2', cursive;
+      background-color: #fdfdfb;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.2em;
+      color: #d61c4e;
+      margin-bottom: 20px;
+    }
+    .home-buttons-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 40px;
+    }
+    .home-button {
+      font-size: 20px;
+      padding: 16px 32px;
+      border: none;
+      border-radius: 10px;
+      background-color: #ff7a59;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .home-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+      background-color: #ff9671;
+    }
+    .screen {
+      display: none;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-top: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    textarea, input, select {
+      width: 100%;
+      font-size: 16px;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button, .screen button {
+      background-color: #d61c4e;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 16px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+    button:hover, .screen button:hover {
+      background-color: #b81340;
+    }
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 14px;
+      color: #888;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="home-screen">
+    <h1>Gestionale studio Dott.ssa Francesca Mola</h1>
+    <div class="home-buttons-container">
+      <button class="home-button" onclick="showScreen('relazioni')">📄 Relazioni</button>
+      <button class="home-button" onclick="showScreen('fatture')">🧾 Fatture</button>
+    </div>
+  </div>
+
+  <!-- RELAZIONI -->
+  <div id="relazioni" class="screen">
+    <h2>Relazione Clinica Psicoterapeutica</h2>
+
+    <label for="datiAnagrafici">Dati anagrafici</label>
+    <textarea id="datiAnagrafici" rows="4"></textarea>
+
+    <label for="motivoInvio">Motivo dell'invio</label>
+    <textarea id="motivoInvio" rows="3"></textarea>
+
+    <label for="quadroDiagnostico">Quadro diagnostico e osservazioni cliniche</label>
+    <textarea id="quadroDiagnostico" rows="3"></textarea>
+
+    <label for="percorso">Percorso psicoterapeutico</label>
+    <textarea id="percorso" rows="3"></textarea>
+
+    <label for="conclusione">Conclusione del trattamento</label>
+    <textarea id="conclusione" rows="3"></textarea>
+
+    <label for="indicazioni">Indicazioni e raccomandazioni</label>
+    <textarea id="indicazioni" rows="3"></textarea>
+
+    <label for="luogoStudio">Luogo dello studio</label>
+    <select id="luogoStudio">
+      <option value="Castelnuovo di Porto">Castelnuovo di Porto</option>
+      <option value="Monterotondo">Monterotondo</option>
+    </select>
+
+    <label for="dataRelazione">Data della relazione</label>
+    <input type="date" id="dataRelazione">
+
+    <label for="formatoRelazione">Formato esportazione</label>
+    <select id="formatoRelazione">
+      <option value="pdf">PDF</option>
+      <option value="docx">DOCX</option>
+    </select>
+
+    <button onclick="generaRelazione()">Scarica Relazione</button>
+    <button onclick="showScreen('home-screen')">← Indietro</button>
+  </div>
+
+  <!-- FATTURE -->
+  <div id="fatture" class="screen">
+    <h2>Importo fatture</h2>
+
+    <label for="numTerapie">Numero terapie</label>
+    <input type="number" id="numTerapie">
+
+    <label for="costoTerapia">Costo per terapia (€)</label>
+    <input type="number" id="costoTerapia">
+
+    <button onclick="calcolaFattura()">Crea Fattura</button>
+    <p id="outputFattura"></p>
+
+    <button onclick="showScreen('home-screen')">← Indietro</button>
+  </div>
+
+  <footer>powered by Pipo developed by Agnegnoooooo</footer>
+
+  <script>
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+      document.getElementById('home-screen').style.display = 'none';
+      document.getElementById(id).style.display = 'block';
+    }
+    showScreen('home-screen');
+    async function generaPDF() { /* ... */ }
+    async function generaDOCX() { /* ... */ }
+    function generaRelazione() {
+      const formato = document.getElementById('formatoRelazione').value;
+      if (formato === 'pdf') generaPDF();
+      else if (formato === 'docx') generaDOCX();
+    }
+    function calcolaFattura() { /* ... */ }
+  </script>
+</body>
+</html>

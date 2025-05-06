@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestionale studio Dott.ssa Francesca Mola</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2&display=swap">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@7.2.1/build/index.umd.js"></script>
+  <style>
+    body { font-family: 'Baloo 2', cursive; background: #fdfdfb; color: #333; max-width: 900px; margin: auto; padding: 20px; }
+    h1 { text-align: center; color: #d61c4e; margin-bottom: 20px; }
+    .home-buttons-container { display: flex; justify-content: center; gap: 20px; margin-top: 40px; }
+    .home-button { padding: 16px 32px; border: none; border-radius: 10px; background: #ff7a59; color: #fff; cursor: pointer; transition: .2s; }
+    .home-button:hover { transform: translateY(-3px); background: #ff9671; }
+    .screen { display: none; background: #fff; padding: 20px; border-radius: 12px; margin-top: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    label { font-weight: bold; margin-top: 15px; display: block; }
+    textarea, input, select { width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #ccc; }
+    button { margin-top: 20px; background: #d61c4e; color: #fff; border: none; border-radius: 8px; padding: 12px 24px; cursor: pointer; }
+    button:hover { background: #b81340; }
+    #outputFattura { margin-top: 10px; white-space: pre-line; }
+    footer { text-align: center; margin-top: 40px; color: #888; }
+  </style>
+</head>
+<body>
+  <div id="home-screen">
+    <h1>Gestionale studio Dott.ssa Francesca Mola</h1>
+    <div class="home-buttons-container">
+      <button class="home-button" onclick="showScreen('relazioni')">📄 Relazioni</button>
+      <button class="home-button" onclick="showScreen('fatture')">🧾 Fatture</button>
+    </div>
+  </div>
+
+  <div id="relazioni" class="screen">
+    <h2>Relazione Clinica Psicoterapeutica</h2>
+    <label for="datiAnagrafici">Dati anagrafici</label><textarea id="datiAnagrafici" rows="4"></textarea>
+    <label for="motivoInvio">Motivo dell'invio</label><textarea id="motivoInvio" rows="3"></textarea>
+    <label for="quadroDiagnostico">Quadro diagnostico e osservazioni cliniche</label><textarea id="quadroDiagnostico" rows="3"></textarea>
+    <label for="percorso">Percorso psicoterapeutico</label><textarea id="percorso" rows="3"></textarea>
+    <label for="conclusione">Conclusione del trattamento</label><textarea id="conclusione" rows="3"></textarea>
+    <label for="indicazioni">Indicazioni e raccomandazioni</label><textarea id="indicazioni" rows="3"></textarea>
+    <label for="luogoStudio">Luogo dello studio</label>
+    <select id="luogoStudio"><option>Castelnuovo di Porto</option><option>Monterotondo</option></select>
+    <label for="dataRelazione">Data della relazione</label><input type="date" id="dataRelazione">
+    <label for="formatoRelazione">Formato esportazione</label>
+    <select id="formatoRelazione"><option value="pdf">PDF</option><option value="docx">DOCX</option></select>
+    <button onclick="generaRelazione()">Scarica Relazione</button>
+    <button onclick="showScreen('home-screen')">← Indietro</button>
+  </div>
+
+  <div id="fatture" class="screen">
+    <h2>Importo fatture</h2>
+    <label for="numTerapie">Numero terapie</label><input type="number" id="numTerapie">
+    <label for="costoTerapia">Costo per terapia (€)</label><input type="number" id="costoTerapia">
+    <button onclick="calcolaFattura()">Crea Fattura</button>
+    <div id="outputFattura"></div>
+    <button onclick="showScreen('home-screen')">← Indietro</button>
+  </div>
+
+  <footer>powered by Pipo developed by Agnegnoooooo</footer>
+
+  <script>
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.style.display='none');
+      document.getElementById('home-screen').style.display='none';
+      document.getElementById(id).style.display='block';
+    }
+    showScreen('home-screen');
+
+    // Fatture
+    function calcolaFattura() {
+      const num=parseFloat(document.getElementById('numTerapie').value),
+            costo=parseFloat(document.getElementById('costoTerapia').value);
+      const out=document.getElementById('outputFattura');
+      if(isNaN(num)||isNaN(costo)||num<=0||costo<=0){
+        out.innerText="Inserisci valori validi.";
+        return;
+      }
+      const netto=(num*costo/1.02).toFixed(2);
+      out.innerText=`Netto da inserire: € ${netto}
+Ricordati di inserire il bollo`;
+    }
+
+    // Relazione PDF
+    async function generaPDF() {
+      const { jsPDF } = window.jspdf, doc=new jsPDF();
+      doc.setFontSize(14);
+      let y=20;
+      doc.text("Relazione Clinica Psicoterapeutica", 14, y);
+      doc.setFontSize(12);
+      const sections=[["Dati anagrafici:","datiAnagrafici"],["Motivo dell'invio:","motivoInvio"],
+        ["Quadro diagnostico:", "quadroDiagnostico"],["Percorso psicoterapeutico:","percorso"],
+        ["Conclusione del trattamento:","conclusione"],["Indicazioni e raccomandazioni:","indicazioni"]];
+      sections.forEach(([title,id])=>{
+        y+=10; if(y>270){doc.addPage(); y=20;}
+        doc.text(title,14,y);
+        const text=document.getElementById(id).value||"";
+        const lines=doc.splitTextToSize(text,180);
+        y+=6; doc.text(lines,14,y);
+        y+=lines.length*5;
+      });
+      const luogo=document.getElementById('luogoStudio').value,
+            data=document.getElementById('dataRelazione').value,
+            dataIt=data?new Date(data).toLocaleDateString('it-IT'):"__/__/____";
+      if(y>270){doc.addPage(); y=20;}
+      doc.text(`${luogo}, il ${dataIt}`,14,y+10);
+      doc.save("Relazione_Clinica.pdf");
+    }
+
+    // Relazione DOCX
+    async function generaDOCX() {
+      const { Document,Packer,Paragraph,TextRun }=docx;
+      const doc=new Document();
+      const children=[new Paragraph({children:[new TextRun({text:"Relazione Clinica Psicoterapeutica",bold:true})]})];
+      const sections=[["Dati anagrafici:","datiAnagrafici"],["Motivo dell'invio:","motivoInvio"],
+        ["Quadro diagnostico:","quadroDiagnostico"],["Percorso psicoterapeutico:","percorso"],
+        ["Conclusione del trattamento:","conclusione"],["Indicazioni e raccomandazioni:","indicazioni"]];
+      sections.forEach(([title,id])=>{
+        children.push(new Paragraph({children:[new TextRun({text:title,bold:true})]}));
+        children.push(new Paragraph(document.getElementById(id).value||""));
+      });
+      const luogo=document.getElementById('luogoStudio').value,
+            data=document.getElementById('dataRelazione').value,
+            dataIt=data?new Date(data).toLocaleDateString('it-IT'):"__/__/____";
+      children.push(new Paragraph(`${luogo}, il ${dataIt}`));
+      doc.addSection({children});
+      const blob=await Packer.toBlob(doc);
+      saveAs(blob,"Relazione_Clinica.docx");
+    }
+
+    function generaRelazione() {
+      const f=document.getElementById('formatoRelazione').value;
+      if(f==="pdf") generaPDF();
+      else if(f==="docx") generaDOCX();
+    }
+  </script>
+</body>
+</html>

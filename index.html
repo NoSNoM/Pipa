@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestionale studio Dott.ssa Francesca Mola</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2&display=swap">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@7.2.1/build/index.umd.js"></script>
+  <style>
+    body { font-family: 'Baloo 2', cursive; background: #fdfdfb; color: #333; max-width: 900px; margin: auto; padding: 20px; }
+    h1 { text-align: center; color: #d61c4e; margin-bottom: 20px; }
+    .home-buttons-container { display: flex; justify-content: center; gap: 20px; margin-top: 40px; }
+    .home-button { padding: 16px 32px; border: none; border-radius: 10px; background: #ff7a59; color: #fff; cursor: pointer; transition: .2s; }
+    .home-button:hover { transform: translateY(-3px); background: #ff9671; }
+    .screen { display: none; background: #fff; padding: 20px; border-radius: 12px; margin-top: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    label { font-weight: bold; margin-top: 15px; display: block; }
+    textarea, input, select { width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #ccc; }
+    button { margin-top: 20px; background: #d61c4e; color: #fff; border: none; border-radius: 8px; padding: 12px 24px; cursor: pointer; }
+    button:hover { background: #b81340; }
+    #outputFattura { margin-top: 10px; white-space: pre-line; }
+    footer { text-align: center; margin-top: 40px; color: #888; }
+  </style>
+</head>
+<body>
+  <div id="home-screen">
+    <h1>Gestionale studio Dott.ssa Francesca Mola</h1>
+    <div class="home-buttons-container">
+      <button class="home-button" onclick="showScreen('relazioni')">📄 Relazioni</button>
+      <button class="home-button" onclick="showScreen('fatture')">🧾 Fatture</button>
+    </div>
+  </div>
+
+  <div id="relazioni" class="screen">
+    <h2>Relazione Clinica Psicoterapeutica</h2>
+    <label for="datiAnagrafici">Dati anagrafici</label><textarea id="datiAnagrafici" rows="4"></textarea>
+    <label for="motivoInvio">Motivo dell'invio</label><textarea id="motivoInvio" rows="3"></textarea>
+    <label for="quadroDiagnostico">Quadro diagnostico e osservazioni cliniche</label><textarea id="quadroDiagnostico" rows="3"></textarea>
+    <label for="percorso">Percorso psicoterapeutico</label><textarea id="percorso" rows="3"></textarea>
+    <label for="conclusione">Conclusione del trattamento</label><textarea id="conclusione" rows="3"></textarea>
+    <label for="indicazioni">Indicazioni e raccomandazioni</label><textarea id="indicazioni" rows="3"></textarea>
+    <label for="luogoStudio">Luogo dello studio</label>
+    <select id="luogoStudio"><option>Castelnuovo di Porto</option><option>Monterotondo</option></select>
+    <label for="dataRelazione">Data della relazione</label><input type="date" id="dataRelazione">
+    <label for="formatoRelazione">Formato esportazione</label>
+    <select id="formatoRelazione"><option value="pdf">PDF</option><option value="docx">DOCX</option></select>
+    <button onclick="generaRelazione()">Scarica Relazione</button>
+    <button onclick="showScreen('home-screen')">← Indietro</button>
+  </div>
+
+  <div id="fatture" class="screen">
+    <h2>Importo fatture</h2>
+    <label for="numTerapie">Numero terapie</label><input type="number" id="numTerapie">
+    <label for="costoTerapia">Costo per terapia (€)</label><input type="number" id="costoTerapia">
+    <button onclick="calcolaFattura()">Crea Fattura</button>
+    <div id="outputFattura"></div>
+    <button onclick="showScreen('home-screen')">← Indietro</button>
+  </div>
+
+  <footer>powered by Pipo developed by Agnegnoooooo</footer>
+
+  
+<script>
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.style.display='none');
+  document.getElementById('home-screen').style.display='none';
+  document.getElementById(id).style.display='block';
+}
+showScreen('home-screen');
+
+function calcolaFattura() {
+  const num = parseFloat(document.getElementById('numTerapie').value);
+  const costo = parseFloat(document.getElementById('costoTerapia').value);
+  const out = document.getElementById('outputFattura');
+  if (isNaN(num) || isNaN(costo) || num <= 0 || costo <= 0) {
+    out.innerText = "Inserisci valori validi.";
+    return;
+  }
+  const netto = (num * costo / 1.02).toFixed(2);
+  out.innerText = `Netto da inserire: € ${netto}
+Ricordati di inserire il bollo`;
+}
+
+async function generaPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  const logo = new Image();
+  logo.src = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCACWAfQDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDzCiiikMKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKANvXJBF4kIbf5EAjWIIQCECgrjII9/xqRPPt/HOxJHlk+2bGZsZcFsHOPUZzUFtq0EkcC3y3CzW42w3VswEiqOgIPXHboaln1qCJnltDdz3jqU+13jgtGv+yBnB980AZF2saXs6xHMayME+meKhoooAK2NIVptK1W3gBNy6IwVfvMitlwP0P4Vj0+KWSCVZYnaORTlWU4INAGvpyxXeqWkemWdxFcrMrb2nDhQDySNoxWfqTxSarePAMRNM5T6bjirn/CS6xuVheuCrBsqqruI9cDn8abrOoWmpyxXUNsYLpgftIH3Gb1X685oAy6KKKAN19j+HtNkMTzWsEkq3CRvtIcnKknBxkY5x2xVuNreW61u8s4Xj077PKjMT8rsx+TAwMc4OO2K5+zv7rT5TJazvExGDjoR6EdDWna+KdShulknl+0QEbJLdgAjKeowBgfXFAGJRVm/e0kvpXsY5I7ZjlEk6r7fnmq1ABWzpdxNZ6JqdxbSNFMJIUEiHDAHfkZ/AflWNWlp13aR2d3Z3omEU5Rg8IBKlc9iRx8xoAml1adNOs3hvJVvFlnaRlYhvm2dT74P5U3X3aW5tJnO6WW0id27s2OppuzQf+fjUv8Avwn/AMXUOq3kN5cRfZ1cQwwpCnmY3EKOpxQBRooooAKKKdHs81PMLBNw3FRkgewoA6O102e2sEFhsbUJlBnctg20bDIIz0yOrdunGec+7vktrNtMsJWMBOZ5ennN7Dso/XvV271a0vYvKm1PUvKwB5aWsaLgdBgOOKz/AC9Ex/x9ah/4DJ/8XQBm04f6s/Uf1ptOH3D9R/WgAjCNKgkYqhYBmAyQO5x3rSvtISxtTO95HIJCDbCMZMq92P8Ad9Oe/wCdZdFABRRRQAUU7Y/9xvyo2P8A3G/KgBtFO2P/AHG/KjY/9xvyoAbRTtj/ANxvyo2P/cb8qAG0U7Y/9xvyo2P/AHG/KgBtFO2P/cb8qNj/ANxvyoAbRTtj/wBxvyo2P/cb8qAG0U7Y/wDcb8qNj/3G/KgBtFO2P/cb8qNj/wBxvyoAbRTtj/3G/KjY/wDcb8qAG0U7Y/8Acb8qNj/3G/KgBtFO2P8A3G/KjY/9xvyoAbRTtj/3G/KjY/8Acb8qAG0U7Y/9xvyo2P8A3G/KgBtFO2P/AHG/KjY/9xvyoAbRTtj/ANxvyo2P/cb8qAG0U7Y/9xvyo2P/AHG/KgBtFO2P/cb8qNj/ANxvyoAbRTtj/wBxvyo2P/cb8qAG0U7Y/wDcb8qNj/3G/KgBtFO2P/cb8qNj/wBxvyoAbRTtj/3G/KjY/wDcb8qAG0U7Y/8Acb8qNj/3G/KgBtFO2P8A3G/KjY/9xvyoAbRTtj/3G/KjY/8Acb8qAG0U7Y/9xvyo2P8A3G/KgBtFO2P/AHG/KjY/9xvyoAbRTtj/ANxvyo2P/cb8qAG0U7Y/9xvyo2P/AHG/KgBtFO2P/cb8qNj/ANxvyoAbRTtj/wBxvyo2P/cb8qAG0U7Y/wDcb8qNj/3G/KgBtFO2P/cb8qKAG0UUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRVLzrn+/F/37P/xVHnXP9+L/AL9n/wCKoAu0VS865/vxf9+z/wDFUedc/wB+L/v2f/iqALtFUvOuf78X/fs//FUedc/34v8Av2f/AIqgC7RVLzrn+/F/37P/AMVR51z/AH4v+/Z/+KoAu0VS865/vxf9+z/8VR51z/fi/wC/Z/8AiqALtFUvOuf78X/fs/8AxVHnXP8Afi/79n/4qgC7RVLzrn+/F/37P/xVHnXP9+L/AL9n/wCKoAu0VS865/vxf9+z/wDFUedc/wB+L/v2f/iqALtFUvOuf78X/fs//FUedc/34v8Av2f/AIqgC7RVLzrn+/F/37P/AMVR51z/AH4v+/Z/+KoAu0VS865/vxf9+z/8VR51z/fi/wC/Z/8AiqALtFUvOuf78X/fs/8AxVHnXP8Afi/79n/4qgC7RVLzrn+/F/37P/xVHnXP9+L/AL9n/wCKoAu0VS865/vxf9+z/wDFUedc/wB+L/v2f/iqALtFUvOuf78X/fs//FUedc/34v8Av2f/AIqgC7RVLzrn+/F/37P/AMVR51z/AH4v+/Z/+KoAu0VS865/vxf9+z/8VR51z/fi/wC/Z/8AiqALtFUvOuf78X/fs/8AxVHnXP8Afi/79n/4qgC7RVLzrn+/F/37P/xVHnXP9+L/AL9n/wCKoAu0VS865/vxf9+z/wDFUedc/wB+L/v2f/iqALtFUvOuf78X/fs//FUedc/34v8Av2f/AIqgC7RVLzrn+/F/37P/AMVR51z/AH4v+/Z/+KoAu0VS865/vxf9+z/8VR51z/fi/wC/Z/8AiqALtFUvOuf78X/fs/8AxVHnXP8Afi/79n/4qgC7RVLzrn+/F/37P/xVHnXP9+L/AL9n/wCKoAu0VS865/vxf9+z/wDFUedc/wB+L/v2f/iqALtFUvOuf78X/fs//FUedc/34v8Av2f/AIqgC7RVLzrn+/F/37P/AMVR51z/AH4v+/Z/+KoAu0VS865/vxf9+z/8VR51z/fi/wC/Z/8AiqALtFUvOuf78X/fs/8AxVHnXP8Afh/79n/4qgC7RVLzrn+/F/37P/xVHnXP9+L/AL9n/wCKoAu0VS865/vxf9+z/wDFUUAfWP8Awrbwb/0L9p+R/wAaP+FbeDf+hftPyP8AjXVUUxHK/wDCtvBv/Qv2n5H/ABo/4Vt4N/6F+0/I/wCNdVRQByv/AArbwb/0L9p+R/xo/wCFbeDf+hftPyP+NdVRQByv/CtvBv8A0L9p+R/xo/4Vt4N/6F+0/I/411VFAHK/8K28G/8AQv2n5H/Gj/hW3g3/AKF+0/I/411VFAHK/wDCtvBv/Qv2n5H/ABo/4Vt4N/6F+0/I/wCNdVRQByv/AArbwb/0L9p+R/xo/wCFbeDf+hftPyP+NdVRQByv/CtvBv8A0L9p+R/xo/4Vt4N/6F+0/I/411VFAHK/8K28G/8AQv2n5H/Gj/hW3g3/AKF+0/I/411VFAHK/wDCtvBv/Qv2n5H/ABo/4Vt4N/6F+0/I/wCNdVRQByv/AArbwb/0L9p+R/xo/wCFbeDf+hftPyP+NdVRQByv/CtvBv8A0L9p+R/xo/4Vt4N/6F+0/I/411VFAHK/8K28G/8AQv2n5H/Gj/hW3g3/AKF+0/I/411VFAHK/wDCtvBv/Qv2n5H/ABo/4Vt4N/6F+0/I/wCNdVRQByv/AArbwb/0L9p+R/xo/wCFbeDf+hftPyP+NdVRQByv/CtvBv8A0L9p+R/xo/4Vt4N/6F+0/I/411VFAHK/8K28G/8AQv2n5H/Gj/hW3g3/AKF+0/I/411VFAHK/wDCtvBv/Qv2n5H/ABo/4Vt4N/6F+0/I/wCNdVRQByv/AArbwb/0L9p+R/xo/wCFbeDf+hftPyP+NdVRQByv/CtvBv8A0L9p+R/xo/4Vt4N/6F+0/I/411VFAHK/8K28G/8AQv2n5H/Gj/hW3g3/AKF+0/I/411VFAHK/wDCtvBv/Qv2n5H/ABo/4Vt4N/6F+0/I/wCNdVRQByv/AArbwb/0L9p+R/xo/wCFbeDf+hftPyP+NdVRQByv/CtvBv8A0L9p+R/xo/4Vt4N/6F+0/I/411VFAHK/8K28G/8AQv2n5H/Gj/hW3g3/AKF+0/I/411VFAHK/wDCtvBv/Qv2n5H/ABo/4Vt4N/6F+0/I/wCNdVRQByv/AArbwb/0L9p+R/xo/wCFbeDf+hftPyP+NdVRQByv/CtvBv8A0L9p+R/xo/4Vt4N/6F+0/I/411VFAHK/8K28G/8AQv2n5H/Gj/hW3g3/AKF+0/I/411VFAHK/wDCtvBv/Qv2n5H/ABo/4Vt4N/6F+0/I/wCNdVRQB8W6jEkOp3cUa7USZ1UegDHFVquat/yGb7/r4k/9CNU6ACiiigD7booooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD4w1b/kM33/XxJ/6Eap1c1b/AJDN9/18Sf8AoRqnQAUUUUAfbdFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAfGGrf8AIZvv+viT/wBCNU6uat/yGb7/AK+JP/QjVOgAooooA+26KKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA+MNW/5DN9/wBfEn/oRqnVzVv+Qzff9fEn/oRqnQAUUUUAfbdFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRUF1eW9lbvcXMyQwoMs7ttAH1NcqPiV4ce6MMd5kZ4lZGVD+OP8A61S5Jbs1p0KlTWEWzsaKz7PVra7SN0YBJf8AVvuDK/0IJH4da0KozaadmFFZOqarfWEyJa6DfairLkyW8kKhfY73U5+gqhZeL1m1aTTr/Sb3TJI7VrtpLp4SgjBAJJSRsde+Oh9KBHS0UDpRQAUVnarqN3YLEbTR7vUS5O4W7xLs+vmOvX2z0rKt/Fsza1ZaXe+H9SsZbwuInleB1+VdxJ2SMQOgzjGSPWgDpqKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA+MNW/5DN9/18Sf+hGqdXNW/5DN9/wBfEn/oRqnQAUUUUAfbdFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFIaKKAPEPinrVxe+I/7J3MtpaKrFM8O5Gcn8DXD9BRRXlV23N3P0TKqcY4WHKuh0HhTxJc6HqCQktLYzsFmgzx/vL6MPX2r32xleSErKcvGSpb+96H64xn3zRRXXhW3FpnzvEVKEK0ZRVm0ZHi3xdZeENPF3ewXEyuG2rCFJyB3yR61xfgzxha6l4T8S+IYYJZNXht3urtrhQEYhGKRphidigY7dz1JoorqPnTt/EPiL+wNFtrsW3nz3MscEUe/au9+m5sEhfoCfarui3t3fWHmX0EENykjRyLBIXTKkjIJUH9KKKAIvEPiC18N6Yb67jmkiDBcQgFskH1I9K4f4deMbDxf4k1O9aG5/tEofL81V8uC2VwFRSCTkk7mOBkn0AoooA6S/1fWr/wAQ3ek6G1lbtYRRyzy3kbSeYXyVRQrDAwpyxJ68CtDxJ4gTw5oLajJA053JGkatty7kKMnsMnk4P0NFFAE2hX99f2sv9oW9vBcwymNlt5WkQ8AgglVPf0rVoooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAPjDVv8AkM33/XxJ/wChGqdFFABRRRQB/9k=';
+  const firma = new Image();
+  firma.src = 'data:image/jpeg;base64,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RRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQB/9k=';
+
+  logo.onload = () => {
+    doc.addImage(logo, 'JPEG', 75, 10, 60, 20);
+
+    doc.setFontSize(10);
+    const dx = 120;
+    const info = [
+      "Dott.ssa Francesca Mola",
+      "Psicologa Psicoterapeuta E.M.D.R.",
+      "Esperta in Psicodiagnosi e Disturbi dell’Apprendimento",
+      "Via Roma, 108 Castelnuovo di Porto",
+      "Cell. 328.4825570",
+      "P.IVA 11302781007 - CF MLOFNC80B65H501V"
+    ];
+    info.forEach((line, i) => doc.text(line, dx, 20 + i * 5));
+
+    doc.setFontSize(12);
+    let y = 60;
+    doc.text("Relazione Clinica Psicoterapeutica", 14, y);
+
+    const sections = [["Dati anagrafici:", "datiAnagrafici"], ["Motivo dell'invio:", "motivoInvio"],
+      ["Quadro diagnostico:", "quadroDiagnostico"], ["Percorso psicoterapeutico:", "percorso"],
+      ["Conclusione del trattamento:", "conclusione"], ["Indicazioni e raccomandazioni:", "indicazioni"]];
+    sections.forEach(([title, id]) => {
+      y += 10;
+      if (y > 260) { doc.addPage(); y = 20; }
+      doc.text(title, 14, y);
+      const text = document.getElementById(id).value || "";
+      const lines = doc.splitTextToSize(text, 180);
+      y += 6; doc.text(lines, 14, y);
+      y += lines.length * 5;
+    });
+
+    const luogo = document.getElementById('luogoStudio').value;
+    const data = document.getElementById('dataRelazione').value;
+    const dataIt = data ? new Date(data).toLocaleDateString('it-IT') : "__/__/____";
+
+    doc.text(`${luogo}, il ${dataIt}`, 14, y + 10);
+    doc.text("Firma", 150, y + 5);
+    doc.addImage(firma, 'JPEG', 140, y + 10, 50, 15);
+    doc.text("Dott.ssa Francesca Mola", 138, y + 28);
+
+    doc.setFontSize(10);
+    doc.text("Si rilascia su richiesta dell’interessato/a per gli usi consentiti dalla legge.", 105, 285, { align: "center" });
+
+    const nomeMatch = document.getElementById('datiAnagrafici').value.match(/Nome:\s*(.+)/i);
+    const nome = nomeMatch ? nomeMatch[1].trim().replace(/\s+/g, "_") : "Paziente";
+    doc.save(`Relazione_${nome}.pdf`);
+  };
+}
+
+async function generaDOCX() {
+  const { Document, Packer, Paragraph, TextRun } = docx;
+  const doc = new Document();
+  const children = [
+    new Paragraph({ children: [new TextRun({ text: "Relazione Clinica Psicoterapeutica", bold: true })] })
+  ];
+  const sections = [["Dati anagrafici:", "datiAnagrafici"], ["Motivo dell'invio:", "motivoInvio"],
+    ["Quadro diagnostico:", "quadroDiagnostico"], ["Percorso psicoterapeutico:", "percorso"],
+    ["Conclusione del trattamento:", "conclusione"], ["Indicazioni e raccomandazioni:", "indicazioni"]];
+  sections.forEach(([title, id]) => {
+    children.push(new Paragraph({ children: [new TextRun({ text: title, bold: true })] }));
+    children.push(new Paragraph(document.getElementById(id).value || ""));
+  });
+
+  const luogo = document.getElementById('luogoStudio').value;
+  const data = document.getElementById('dataRelazione').value;
+  const dataIt = data ? new Date(data).toLocaleDateString('it-IT') : "__/__/____";
+
+  children.push(new Paragraph(`${luogo}, il ${dataIt}`));
+  children.push(new Paragraph("Firma"));
+  children.push(new Paragraph("Dott.ssa Francesca Mola"));
+  children.push(new Paragraph("Si rilascia su richiesta dell’interessato/a per gli usi consentiti dalla legge."));
+
+  doc.addSection({ children });
+  const blob = await Packer.toBlob(doc);
+  const nomeMatch = document.getElementById('datiAnagrafici').value.match(/Nome:\s*(.+)/i);
+  const nome = nomeMatch ? nomeMatch[1].trim().replace(/\s+/g, "_") : "Paziente";
+  saveAs(blob, `Relazione_${nome}.docx`);
+}
+
+function generaRelazione() {
+  const f = document.getElementById('formatoRelazione').value;
+  if (f === "pdf") generaPDF();
+  else if (f === "docx") generaDOCX();
+}
+</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@7.2.1/build/index.umd.js"></script>
+  <style>
+    body { font-family: 'Baloo 2', cursive; background: #fdfdfb; color: #333; max-width: 900px; margin: auto; padding: 20px; }
+    h1 { text-align: center; color: #d61c4e; margin-bottom: 20px; }
+    .home-buttons-container { display: flex; justify-content: center; gap: 20px; margin-top: 40px; }
+    .home-button { padding: 16px 32px; border: none; border-radius: 10px; background: #ff7a59; color: #fff; cursor: pointer; transition: .2s; }
+    .home-button:hover { transform: translateY(-3px); background: #ff9671; }
+    .screen { display: none; background: #fff; padding: 20px; border-radius: 12px; margin-top: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    label { font-weight: bold; margin-top: 15px; display: block; }
+    textarea, input, select { width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #ccc; }
+    button { margin-top: 20px; background: #d61c4e; color: #fff; border: none; border-radius: 8px; padding: 12px 24px; cursor: pointer; }
+    button:hover { background: #b81340; }
+    #outputFattura { margin-top: 10px; white-space: pre-line; }
+    footer { text-align: center; margin-top: 40px; color: #888; }
+  </style>
+</head>
+<body>
+  <div id="home-screen">
+    <h1>Gestionale studio Dott.ssa Francesca Mola</h1>
+    <div class="home-buttons-container">
+      <button class="home-button" onclick="showScreen('relazioni')">📄 Relazioni</button>
+      <button class="home-button" onclick="showScreen('fatture')">🧾 Fatture</button>
+    </div>
+  </div>
+
+  <div id="relazioni" class="screen">
+    <h2>Relazione Clinica Psicoterapeutica</h2>
+    <label for="datiAnagrafici">Dati anagrafici</label><textarea id="datiAnagrafici" rows="4"></textarea>
+    <label for="motivoInvio">Motivo dell'invio</label><textarea id="motivoInvio" rows="3"></textarea>
+    <label for="quadroDiagnostico">Quadro diagnostico e osservazioni cliniche</label><textarea id="quadroDiagnostico" rows="3"></textarea>
+    <label for="percorso">Percorso psicoterapeutico</label><textarea id="percorso" rows="3"></textarea>
+    <label for="conclusione">Conclusione del trattamento</label><textarea id="conclusione" rows="3"></textarea>
+    <label for="indicazioni">Indicazioni e raccomandazioni</label><textarea id="indicazioni" rows="3"></textarea>
+    <label for="luogoStudio">Luogo dello studio</label>
+    <select id="luogoStudio"><option>Castelnuovo di Porto</option><option>Monterotondo</option></select>
+    <label for="dataRelazione">Data della relazione</label><input type="date" id="dataRelazione">
+    <label for="formatoRelazione">Formato esportazione</label>
+    <select id="formatoRelazione"><option value="pdf">PDF</option><option value="docx">DOCX</option></select>
+    <button onclick="generaRelazione()">Scarica Relazione</button>
+    <button onclick="showScreen('home-screen')">← Indietro</button>
+  </div>
+
+  <div id="fatture" class="screen">
+    <h2>Importo fatture</h2>
+    <label for="numTerapie">Numero terapie</label><input type="number" id="numTerapie">
+    <label for="costoTerapia">Costo per terapia (€)</label><input type="number" id="costoTerapia">
+    <button onclick="calcolaFattura()">Crea Fattura</button>
+    <div id="outputFattura"></div>
+    <button onclick="showScreen('home-screen')">← Indietro</button>
+  </div>
+
+  <footer>powered by Pipo developed by Agnegnoooooo</footer>
+
+  <script>
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.style.display='none');
+      document.getElementById('home-screen').style.display='none';
+      document.getElementById(id).style.display='block';
+    }
+    showScreen('home-screen');
+
+    // Fatture
+    function calcolaFattura() {
+      const num=parseFloat(document.getElementById('numTerapie').value),
+            costo=parseFloat(document.getElementById('costoTerapia').value);
+      const out=document.getElementById('outputFattura');
+      if(isNaN(num)||isNaN(costo)||num<=0||costo<=0){
+        out.innerText="Inserisci valori validi.";
+        return;
+      }
+      const netto=(num*costo/1.02).toFixed(2);
+      out.innerText=`Netto da inserire: € ${netto}
+Ricordati di inserire il bollo`;
+    }
+
+    // Relazione PDF
+    async function generaPDF() {
+      const { jsPDF } = window.jspdf, doc=new jsPDF();
+      doc.setFontSize(14);
+      let y=20;
+      doc.text("Relazione Clinica Psicoterapeutica", 14, y);
+      doc.setFontSize(12);
+      const sections=[["Dati anagrafici:","datiAnagrafici"],["Motivo dell'invio:","motivoInvio"],
+        ["Quadro diagnostico:", "quadroDiagnostico"],["Percorso psicoterapeutico:","percorso"],
+        ["Conclusione del trattamento:","conclusione"],["Indicazioni e raccomandazioni:","indicazioni"]];
+      sections.forEach(([title,id])=>{
+        y+=10; if(y>270){doc.addPage(); y=20;}
+        doc.text(title,14,y);
+        const text=document.getElementById(id).value||"";
+        const lines=doc.splitTextToSize(text,180);
+        y+=6; doc.text(lines,14,y);
+        y+=lines.length*5;
+      });
+      const luogo=document.getElementById('luogoStudio').value,
+            data=document.getElementById('dataRelazione').value,
+            dataIt=data?new Date(data).toLocaleDateString('it-IT'):"__/__/____";
+      if(y>270){doc.addPage(); y=20;}
+      doc.text(`${luogo}, il ${dataIt}`,14,y+10);
+      doc.save("Relazione_Clinica.pdf");
+    }
+
+    // Relazione DOCX
+    async function generaDOCX() {
+      const { Document,Packer,Paragraph,TextRun }=docx;
+      const doc=new Document();
+      const children=[new Paragraph({children:[new TextRun({text:"Relazione Clinica Psicoterapeutica",bold:true})]})];
+      const sections=[["Dati anagrafici:","datiAnagrafici"],["Motivo dell'invio:","motivoInvio"],
+        ["Quadro diagnostico:","quadroDiagnostico"],["Percorso psicoterapeutico:","percorso"],
+        ["Conclusione del trattamento:","conclusione"],["Indicazioni e raccomandazioni:","indicazioni"]];
+      sections.forEach(([title,id])=>{
+        children.push(new Paragraph({children:[new TextRun({text:title,bold:true})]}));
+        children.push(new Paragraph(document.getElementById(id).value||""));
+      });
+      const luogo=document.getElementById('luogoStudio').value,
+            data=document.getElementById('dataRelazione').value,
+            dataIt=data?new Date(data).toLocaleDateString('it-IT'):"__/__/____";
+      children.push(new Paragraph(`${luogo}, il ${dataIt}`));
+      doc.addSection({children});
+      const blob=await Packer.toBlob(doc);
+      saveAs(blob,"Relazione_Clinica.docx");
+    }
+
+    function generaRelazione() {
+      const f=document.getElementById('formatoRelazione').value;
+      if(f==="pdf") generaPDF();
+      else if(f==="docx") generaDOCX();
+    }
+  </script>
+</body>
+</html>

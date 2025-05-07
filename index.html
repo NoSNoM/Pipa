@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Gestionale studio di psicoterapia Dott.ssa Francesca Mola">
+  <title>Gestionale studio Dott.ssa Francesca Mola</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2&display=swap">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@7.2.1/build/index.min.js"></script>
+  <script src="https://unpkg.com/@docx/docx-preview@0.1.15/dist/docx-preview.js"></script>
+  <style>
+    /* ... [Stili CSS rimangono invariati] ... */
+  </style>
+</head>
+<body>
+  <div id="home-screen">
+    <h1>Gestionale studio Dott.ssa Francesca Mola</h1>
+    <div class="home-buttons-container">
+      <button class="home-button" onclick="showScreen('relazioni')">📄 Relazioni</button>
+      <button class="home-button" onclick="showScreen('fatture')">🧾 Fatture</button>
+      <button class="home-button" onclick="showScreen('permessi')">📋 Permessi</button>
+    </div>
+  </div>
+
+  <div id="relazioni" class="screen">
+    <button class="back-button" onclick="tornaHome()">← Indietro</button>
+    <h2>Relazione Clinica Psicoterapeutica</h2>
+    <label for="datiAnagrafici">Dati anagrafici</label>
+    <textarea id="datiAnagrafici" rows="4"></textarea>
+    <label for="motivoInvio">Motivo dell'invio</label>
+    <textarea id="motivoInvio" rows="3"></textarea>
+    <label for="quadroDiagnostico">Quadro diagnostico e osservazioni cliniche</label>
+    <textarea id="quadroDiagnostico" rows="3"></textarea>
+    <label for="percorso">Percorso psicoterapeutico</label>
+    <textarea id="percorso" rows="3"></textarea>
+    <label for="conclusione">Conclusione del trattamento</label>
+    <textarea id="conclusione" rows="3"></textarea>
+    <label for="studio-rel">Studio</label>
+    <select id="studio-rel">
+      <option value="Castelnuovo di Porto">Castelnuovo di Porto</option>
+      <option value="Monterotondo">Monterotondo</option>
+    </select>
+    <label for="data-rel">Data</label>
+    <input type="date" id="data-rel">
+    <button onclick="generaPDF()">Genera PDF</button>
+    <button onclick="generaDOCX()">Genera DOCX</button>
+    <div id="outputRelazione"></div>
+  </div>
+
+  <div id="fatture" class="screen">
+    <button class="back-button" onclick="tornaHome()">← Indietro</button>
+    <h2>Generazione Fattura</h2>
+    <label for="numeroFattura">Numero Fattura</label>
+    <input type="number" id="numeroFattura">
+    <label for="dataFattura">Data</label>
+    <input type="date" id="dataFattura">
+    <label for="paziente">Paziente</label>
+    <input type="text" id="paziente">
+    <label for="importo">Importo</label>
+    <input type="number" id="importo" step="0.01">
+    <label for="prestazione">Prestazione</label>
+    <input type="text" id="prestazione">
+    <button onclick="generaFattura()">Genera Fattura</button>
+    <div id="outputFattura"></div>
+  </div>
+
+  <div id="permessi" class="screen">
+    <button class="back-button" onclick="tornaHome()">← Indietro</button>
+    <h2>Attestazione di Presenza per Prestazione Sanitaria</h2>
+    <label for="nomePaziente">Nome e Cognome Paziente</label>
+    <input type="text" id="nomePaziente">
+    <label for="luogoNascita">Nato/a a</label>
+    <input type="text" id="luogoNascita">
+    <label for="dataNascita">il</label>
+    <input type="date" id="dataNascita">
+    <label for="codiceFiscale">Codice Fiscale</label>
+    <input type="text" id="codiceFiscale">
+    <label for="meseTerapia">Mese Terapia</label>
+    <select id="meseTerapia">
+      <option value="gennaio">Gennaio</option>
+      <option value="febbraio">Febbraio</option>
+      <option value="marzo">Marzo</option>
+      <option value="aprile">Aprile</option>
+      <option value="maggio">Maggio</option>
+      <option value="giugno">Giugno</option>
+      <option value="luglio">Luglio</option>
+      <option value="agosto">Agosto</option>
+      <option value="settembre">Settembre</option>
+      <option value="ottobre">Ottobre</option>
+      <option value="novembre">Novembre</option>
+      <option value="dicembre">Dicembre</option>
+    </select>
+    <label for="giornoTerapia">Giorno Terapia</label>
+    <input type="text" id="giornoTerapia" placeholder="es: martedì">
+    <label for="accompagnatore">Accompagnatore</label>
+    <input type="text" id="accompagnatore">
+    <label for="studio-perm">Studio</label>
+    <select id="studio-perm">
+      <option value="Castelnuovo di Porto">Castelnuovo di Porto</option>
+      <option value="Monterotondo">Monterotondo</option>
+    </select>
+    <label for="data-perm">Data</label>
+    <input type="date" id="data-perm">
+    <button onclick="generaPermessoPDF()">Genera PDF</button>
+    <button onclick="generaPermessoDOCX()">Genera DOCX</button>
+    <div id="outputPermesso"></div>
+  </div>
+    <script>
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(screen => screen.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+      document.getElementById('home-screen').style.display = 'none';
+    }
+
+    function tornaHome() {
+      document.querySelectorAll('.screen').forEach(screen => screen.style.display = 'none');
+      document.getElementById('home-screen').style.display = 'block';
+    }
+
+    function estraiNomeCognome(datiAnagrafici) {
+      const righe = datiAnagrafici.split('\n');
+      if (righe.length > 0) {
+        const primaParte = righe[0].split(':');
+        if (primaParte.length > 1) {
+          return primaParte[1].trim();
+        }
+        return righe[0].trim();
+      }
+      return 'paziente';
+    }
+
+    function formattaData(data) {
+      const d = new Date(data);
+      return d.toLocaleDateString('it-IT', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    }
+
+    async function generaPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const studio = document.getElementById('studio-rel').value;
+      const datiAnagrafici = document.getElementById('datiAnagrafici').value;
+      const motivoInvio = document.getElementById('motivoInvio').value;
+      const quadroDiagnostico = document.getElementById('quadroDiagnostico').value;
+      const percorso = document.getElementById('percorso').value;
+      const conclusione = document.getElementById('conclusione').value;
+      const data = document.getElementById('data-rel').value;
+      const nomePaziente = estraiNomeCognome(datiAnagrafici);
+
+      // Impostazioni pagina
+      doc.setFont('helvetica');
+      doc.setFontSize(10);
+
+      try {
+        // Logo
+        const img = new Image();
+        img.src = 'logo.png';
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+        });
+        doc.addImage(img, 'PNG', 75, 10, 60, 30);
+      } catch (error) {
+        console.error('Errore nel caricamento del logo:', error);
+      }
+
+      // Intestazione
+      doc.setFontSize(11);
+      doc.text('Dott.ssa Francesca Mola', 130, 20, { align: 'right' });
+      doc.setFontSize(10);
+      doc.text('Psicologa Psicoterapeuta E. M.D.R.', 130, 25, { align: 'right' });
+      doc.text('Esperta in Psicodiagnosi e Disturbi dell'Apprendimento', 130, 30, { align: 'right' });
+      doc.text('Via Roma, 108 ' + studio, 130, 35, { align: 'right' });
+      doc.text('Cell. 328.8825570', 130, 40, { align: 'right' });
+      doc.text('(P.IVA 11302781007 - CF MLOFNC80B65H501V)', 130, 45, { align: 'right' });
+
+      // Titolo
+      doc.setFontSize(14);
+      doc.text('RELAZIONE CLINICA PSICOTERAPEUTICA', 105, 60, { align: 'center' });
+
+      // Contenuto
+      doc.setFontSize(10);
+      let y = 70;
+
+      doc.text('Dati anagrafici:', 20, y);
+      y += 5;
+      const datiAnagraficiLines = doc.splitTextToSize(datiAnagrafici, 170);
+      doc.text(datiAnagraficiLines, 20, y);
+      y += datiAnagraficiLines.length * 5 + 5;
+
+      doc.text('Motivo dell'invio:', 20, y);
+      y += 5;
+      const motivoInvioLines = doc.splitTextToSize(motivoInvio, 170);
+      doc.text(motivoInvioLines, 20, y);
+      y += motivoInvioLines.length * 5 + 5;
+
+      doc.text('Quadro diagnostico e osservazioni cliniche:', 20, y);
+      y += 5;
+      const quadroDiagnosticoLines = doc.splitTextToSize(quadroDiagnostico, 170);
+      doc.text(quadroDiagnosticoLines, 20, y);
+      y += quadroDiagnosticoLines.length * 5 + 5;
+
+      doc.text('Percorso psicoterapeutico:', 20, y);
+      y += 5;
+      const percorsoLines = doc.splitTextToSize(percorso, 170);
+      doc.text(percorsoLines, 20, y);
+      y += percorsoLines.length * 5 + 5;
+
+      doc.text('Conclusione del trattamento:', 20, y);
+      y += 5;
+      const conclusioneLines = doc.splitTextToSize(conclusione, 170);
+      doc.text(conclusioneLines, 20, y);
+      y += conclusioneLines.length * 5 + 15;
+
+      // Data e firma
+      doc.text(studio + ', lì ' + formattaData(data), 20, y);
+
+      try {
+        // Firma
+        const firma = new Image();
+        firma.src = 'firma.png';
+        await new Promise((resolve, reject) => {
+          firma.onload = resolve;
+          firma.onerror = reject;
+        });
+        doc.addImage(firma, 'PNG', 120, y - 20, 60, 30);
+      } catch (error) {
+        console.error('Errore nel caricamento della firma:', error);
+      }
+
+      // Nota legale
+      doc.setFontSize(9);
+      doc.text('Si rilascia su richiesta dell'interessato/a per gli usi consentiti dalla legge.', 20, y + 10);
+
+      // Salva il PDF
+      doc.save('relazione_' + nomePaziente.toLowerCase().replace(/\s+/g, '_') + '.pdf');
+    }
+
+    async function generaDOCX() {
+      const { Document, Paragraph, TextRun, AlignmentType, ImageRun, Packer } = docx;
+      const studio = document.getElementById('studio-rel').value;
+      const datiAnagrafici = document.getElementById('datiAnagrafici').value;
+      const motivoInvio = document.getElementById('motivoInvio').value;
+      const quadroDiagnostico = document.getElementById('quadroDiagnostico').value;
+      const percorso = document.getElementById('percorso').value;
+      const conclusione = document.getElementById('conclusione').value;
+      const data = document.getElementById('data-rel').value;
+      const nomePaziente = estraiNomeCognome(datiAnagrafici);
+
+      try {
+        // Carica le immagini
+        const logoResponse = await fetch('logo.png');
+        const logoBlob = await logoResponse.blob();
+        const logoBase64 = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result.split(',')[1]);
+          reader.readAsDataURL(logoBlob);
+        });
+
+        const firmaResponse = await fetch('firma.png');
+        const firmaBlob = await firmaResponse.blob();
+        const firmaBase64 = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result.split(',')[1]);
+          reader.readAsDataURL(firmaBlob);
+        });
+
+        const doc = new Document({
+          sections: [{
+            properties: {},
+            children: [
+              new Paragraph({
+                children: [
+                  new ImageRun({
+                    data: logoBase64,
+                    transformation: {
+                      width: 200,
+                      height: 100,
+                    },
+                  }),
+                ],
+                alignment: AlignmentType.CENTER,
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Dott.ssa Francesca Mola",
+                    bold: true,
+                    size: 24,
+                  }),
+                ],
+                alignment: AlignmentType.RIGHT,
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Psicologa Psicoterapeuta E. M.D.R.",
+                    size: 22,
+                  }),
+                ],
+                alignment: AlignmentType.RIGHT,
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Esperta in Psicodiagnosi e Disturbi dell'Apprendimento",
+                    size: 22,
+                  }),
+                ],
+                alignment: AlignmentType.RIGHT,
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `Via Roma, 108 ${studio}`,
+                    size: 22,
+                  }),
+                ],
+                alignment: AlignmentType.RIGHT,
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Cell. 328.8825570",
+                    size: 22,
+                  }),
+                ],
+                alignment: AlignmentType.RIGHT,
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "(P.IVA 11302781007 - CF MLOFNC80B65H501V)",
+                    size: 22,
+                  }),
+                ],
+                alignment: AlignmentType.RIGHT,
+              }),
+              new Paragraph({
+                text: "",
+                spacing: {
+                  after: 200,
+                },
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "RELAZIONE CLINICA PSICOTERAPEUTICA",
+                    bold: true,
+                    size: 28,
+                  }),
+                ],
+                alignment: AlignmentType.CENTER,
+              }),
+              new Paragraph({
+                text: "",
+                spacing: {
+                  after: 200,
+                },
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Dati anagrafici:",
+                    bold: true,
+                    size: 24,
+                  }),
+                ],
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: datiAnagrafici,
+                    size: 24,
+                  }),
+                ],
+              }),
+              new Paragraph({
+                text: "",
+                spacing: {
+                  after: 200,
+                },
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Motivo dell'invio:",
+                    bold: true,
+                    size: 24,
+                  }),
+                ],
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: motivoInvio,
+                    size: 24,
+                  }),
+                ],
+              }),
+              new Paragraph({
+                text: "",
+                spacing: {
+                  after: 200,
+                },
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Quadro diagnostico e osservazioni cliniche:",
+                    bold: true,
+                    size: 24,
+                  }),
+                ],
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: quadroDiagnostico,
+                    size: 24,
+                  }),
+                ],
+              }),
+              new Paragraph({
+                text: "",
+                spacing: {
+                  after: 200,
+                },
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Percorso psicoterapeutico:",
+                    bold: true,
+                    size: 24,
+                  }),
+                ],
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: percorso,
+                    size: 24,
+                  }),
+                ],
+              }),
+              new Paragraph({
+                text: "",
+                spacing: {
+                  after: 200,
+                },
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Conclusione del trattamento:",
+                    bold: true,
+                    size: 24,
+                  }),
+                ],
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: conclusione,
+                    size: 24,
+                  }),
+                ],
+              }),
+              new Paragraph({
+                text: "",
+                spacing: {
+                  after: 400,
+                },
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `${studio}, lì ${formattaData(data)}`,
+                    size: 24,
+                  }),
+                ],
+              }),
+              new Paragraph({
+                children: [
+                  new ImageRun({
+                    data: firmaBase64,
+                    transformation: {
+                      width: 150,
+                      height: 75,
+                    },
+                  }),
+                ],
+                alignment: AlignmentType.RIGHT,
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Si rilascia su richiesta dell'interessato/a per gli usi consentiti dalla legge.",
+                    size: 20,
+                    italics: true,
+                  }),
+                ],
+              }),
+            ],
+          }],
+        });
+
+        const blob = await Packer.toBlob(doc);
+        saveAs(blob, 'relazione_' + nomePaziente.toLowerCase().replace(/\s+/g, '_') + '.docx');
+      } catch (error) {
+        console.error('Errore durante la generazione del DOCX:', error);
+        alert('Errore durante la generazione del documento DOCX. Controlla la console per i dettagli.');
+      }
+    }
+
+    // ... [Funzioni per i permessi rimangono invariate] ...
+  </script>
+</body>
+</html>

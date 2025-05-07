@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Gestionale studio di psicoterapia Dott.ssa Francesca Mola">
+  <title>Gestionale studio Dott.ssa Francesca Mola</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2&display=swap">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
+  <script>
+    window.onload = function() {
+      if (typeof window.docx === 'undefined') {
+        window.docx = docx;
+      }
+      
+      if (typeof window.jspdf === 'undefined' || typeof window.saveAs === 'undefined' || typeof window.docx === 'undefined') {
+        console.error('Errore nel caricamento delle librerie');
+        alert('Errore nel caricamento delle librerie. Ricarica la pagina.');
+      } else {
+        console.log('Tutte le librerie sono state caricate correttamente');
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --primary-color: #d61c4e;
+      --secondary-color: #ff7a59;
+      --hover-color: #ff9671;
+      --text-color: #333;
+      --background-color: #fdfdfb;
+      --white: #fff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Baloo 2', cursive;
+      background: var(--background-color);
+      color: var(--text-color);
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--primary-color);
+      margin-bottom: 20px;
+    }
+
+    .home-buttons-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 40px;
+      flex-wrap: wrap;
+    }
+
+    .home-button {
+      padding: 16px 32px;
+      border: none;
+      border-radius: 10px;
+      background: var(--secondary-color);
+      color: var(--white);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 200px;
+    }
+
+    .home-button:hover {
+      transform: translateY(-3px);
+      background: var(--hover-color);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .home-button:focus {
+      outline: 3px solid var(--hover-color);
+      outline-offset: 2px;
+    }
+
+    .screen {
+      display: none;
+      background: var(--white);
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 15px;
+      display: block;
+      color: var(--text-color);
+    }
+
+    textarea, input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-family: inherit;
+      transition: border-color 0.3s ease;
+    }
+
+    textarea:focus, input:focus, select:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(214, 28, 78, 0.1);
+    }
+
+    button {
+      margin-top: 20px;
+      margin-right: 10px;
+      padding: 12px 24px;
+      background: var(--primary-color);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: #b81340;
+      transform: translateY(-2px);
+    }
+
+    button:focus {
+      outline: 3px solid rgba(214, 28, 78, 0.3);
+      outline-offset: 2px;
+    }
+
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      color: #888;
+      font-size: 0.9em;
+    }
+
+    .required::after {
+      content: " *";
+      color: var(--primary-color);
+    }
+  </style>
+</head>
+<body>
+  <div id="home-screen">
+    <h1>Gestionale studio Dott.ssa Francesca Mola</h1>
+    <div class="home-buttons-container">
+      <button class="home-button" onclick="showScreen('relazioni')" aria-label="Vai alla sezione relazioni">📄 Relazioni</button>
+      <button class="home-button" onclick="showScreen('fatture')" aria-label="Vai alla sezione fatture">🧾 Fatture</button>
+      <button class="home-button" onclick="showScreen('permessi')" aria-label="Vai alla sezione permessi">📋 Permessi</button>
+    </div>
+  </div>
+
+  <div id="relazioni" class="screen" role="region" aria-label="Sezione relazioni">
+    <h2>Relazione Clinica Psicoterapeutica</h2>
+    <form id="relazioneForm" onsubmit="event.preventDefault(); generaRelazione();">
+      <div class="form-group">
+        <label for="datiAnagrafici">Dati anagrafici *</label>
+        <textarea id="datiAnagrafici" rows="4" required aria-required="true"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="motivoInvio">Motivo dell'invio *</label>
+        <textarea id="motivoInvio" rows="3" required aria-required="true"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="quadroDiagnostico">Quadro diagnostico e osservazioni cliniche *</label>
+        <textarea id="quadroDiagnostico" rows="3" required aria-required="true"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="percorso">Percorso psicoterapeutico *</label>
+        <textarea id="percorso" rows="3" required aria-required="true"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="conclusione">Conclusione del trattamento *</label>
+        <textarea id="conclusione" rows="3" required aria-required="true"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="indicazioni">Indicazioni e raccomandazioni *</label>
+        <textarea id="indicazioni" rows="3" required aria-required="true"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="luogoStudio">Luogo dello studio *</label>
+        <select id="luogoStudio" required aria-required="true">
+          <option value="">Seleziona una sede</option>
+          <option value="Castelnuovo di Porto">Castelnuovo di Porto</option>
+          <option value="Monterotondo">Monterotondo</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="dataRelazione">Data della relazione *</label>
+        <input type="date" id="dataRelazione" required aria-required="true">
+      </div>
+      <div class="form-group">
+        <label for="formatoRelazione">Formato esportazione *</label>
+        <select id="formatoRelazione" required aria-required="true">
+          <option value="pdf">PDF</option>
+          <option value="docx">DOCX</option>
+        </select>
+      </div>
+      <button type="submit">Genera Relazione</button>
+      <button type="button" onclick="showScreen('home-screen')" aria-label="Torna alla home">← Indietro</button>
+    </form>
+  </div>
+
+  <div id="fatture" class="screen" role="region" aria-label="Sezione fatture">
+    <h2>Importo fatture</h2>
+    <form id="fatturaForm" onsubmit="event.preventDefault(); calcolaFattura();">
+      <div class="form-group">
+        <label for="numTerapie">Numero terapie *</label>
+        <input type="number" id="numTerapie" required min="1" step="1">
+      </div>
+      <div class="form-group">
+        <label for="costoTerapia">Costo per terapia *</label>
+        <input type="number" id="costoTerapia" required min="0" step="0.01">
+      </div>
+      <button type="submit">Calcola</button>
+      <button type="button" onclick="showScreen('home-screen')" aria-label="Torna alla home">← Indietro</button>
+      <p id="outputFattura"></p>
+    </form>
+  </div>
+
+  <div id="permessi" class="screen" role="region" aria-label="Sezione permessi">
+    <h2>Permesso di presenza</h2>
+    <form id="permessoForm" onsubmit="event.preventDefault(); generaPermesso();">
+      <div class="form-group">
+        <label for="nomePaziente">Nome e Cognome *</label>
+        <input type="text" id="nomePaziente" required aria-required="true">
+      </div>
+      <div class="form-group">
+        <label for="luogoNascita">Luogo di nascita *</label>
+        <input type="text" id="luogoNascita" required aria-required="true">
+      </div>
+      <div class="form-group">
+        <label for="dataNascita">Data di nascita *</label>
+        <input type="date" id="dataNascita" required aria-required="true">
+      </div>
+      <div class="form-group">
+        <label for="codiceFiscale">Codice Fiscale *</label>
+        <input type="text" id="codiceFiscale" required aria-required="true" maxlength="16">
+      </div>
+            <div class="form-group">
+        <label for="studioPermesso">Sede dello studio *</label>
+        <select id="studioPermesso" required aria-required="true">
+          <option value="">Seleziona una sede</option>
+          <option value="Castelnuovo di Porto">Castelnuovo di Porto</option>
+          <option value="Monterotondo">Monterotondo</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="mesePermesso">Mese *</label>
+        <select id="mesePermesso" required aria-required="true">
+          <option value="">Seleziona il mese</option>
+          <option value="gennaio">Gennaio</option>
+          <option value="febbraio">Febbraio</option>
+          <option value="marzo">Marzo</option>
+          <option value="aprile">Aprile</option>
+          <option value="maggio">Maggio</option>
+          <option value="giugno">Giugno</option>
+          <option value="luglio">Luglio</option>
+          <option value="agosto">Agosto</option>
+          <option value="settembre">Settembre</option>
+          <option value="ottobre">Ottobre</option>
+          <option value="novembre">Novembre</option>
+          <option value="dicembre">Dicembre</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="giornoSettimana">Giorno della settimana *</label>
+        <select id="giornoSettimana" required aria-required="true">
+          <option value="">Seleziona il giorno</option>
+          <option value="lunedì">Lunedì</option>
+          <option value="martedì">Martedì</option>
+          <option value="mercoledì">Mercoledì</option>
+          <option value="giovedì">Giovedì</option>
+          <option value="venerdì">Venerdì</option>
+          <option value="sabato">Sabato</option>
+          <option value="domenica">Domenica</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="orarioPermesso">Orario *</label>
+        <input type="time" id="orarioPermesso" required aria-required="true">
+      </div>
+      <div class="form-group">
+        <label for="accompagnatore">Accompagnatore (opzionale)</label>
+        <input type="text" id="accompagnatore" placeholder="Nome e cognome dell'accompagnatore">
+      </div>
+      <div class="form-group">
+        <label for="relazioneParentela">Relazione di parentela (opzionale)</label>
+        <input type="text" id="relazioneParentela" placeholder="Es: genitore, figlio/a, coniuge">
+      </div>
+      <div class="form-group">
+        <label for="dataPermesso">Data del permesso *</label>
+        <input type="date" id="dataPermesso" required aria-required="true">
+      </div>
+      <button type="submit">Genera Permesso</button>
+      <button type="button" onclick="showScreen('home-screen')" aria-label="Torna alla home">← Indietro</button>
+    </form>
+  </div>
+
+  <footer>powered by Pipo developed by Agnegnoooooo</footer>
+
+  <script>
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+      document.getElementById('home-screen').style.display = 'none';
+      document.getElementById(id).style.display = 'block';
+    }
+
+    function calcolaFattura() {
+      const numTerapie = parseFloat(document.getElementById('numTerapie').value);
+      const costoTerapia = parseFloat(document.getElementById('costoTerapia').value);
+      
+      if (isNaN(numTerapie) || isNaN(costoTerapia) || numTerapie <= 0 || costoTerapia <= 0) {
+        document.getElementById('outputFattura').innerText = "Inserisci valori validi.";
+        return;
+      }
+      
+      const netto = (numTerapie * costoTerapia / 1.02).toFixed(2);
+      document.getElementById('outputFattura').innerText = 
+        `Netto da inserire: € ${netto}\nRicordati di inserire il bollo`;
+    }
+    async function generaPermesso() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      // Carica il logo e la firma
+      const logo = new Image();
+      logo.src = 'logo.png';
+      const firma = new Image();
+      firma.src = 'firma.png';
+
+      // Raccogli i dati dal form
+      const nomePaziente = document.getElementById('nomePaziente').value;
+      const dataNascita = new Date(document.getElementById('dataNascita').value);
+      const dataNascitaFormattata = `${dataNascita.getDate().toString().padStart(2, '0')}.${(dataNascita.getMonth() + 1).toString().padStart(2, '0')}.${dataNascita.getFullYear()}`;
+      const luogoNascita = document.getElementById('luogoNascita').value;
+      const codiceFiscale = document.getElementById('codiceFiscale').value;
+      const mese = document.getElementById('mesePermesso').value;
+      const giornoSettimana = document.getElementById('giornoSettimana').value;
+      const orario = document.getElementById('orarioPermesso').value;
+      const studio = document.getElementById('studioPermesso').value;
+      const accompagnatore = document.getElementById('accompagnatore').value;
+      const relazioneParentela = document.getElementById('relazioneParentela').value;
+      const dataPermesso = new Date(document.getElementById('dataPermesso').value);
+      const dataPermessoFormattata = `${dataPermesso.getDate().toString().padStart(2, '0')}.${(dataPermesso.getMonth() + 1).toString().padStart(2, '0')}.${dataPermesso.getFullYear()}`;
+
+      // Imposta il font e la dimensione
+      doc.setFont('helvetica');
+      doc.setFontSize(12);
+
+      // Aggiungi il logo (ridimensionato e centrato)
+      await new Promise(r => logo.onload = r);
+      doc.addImage(logo, 'PNG', (210 - 40) / 2, 10, 40, 40);
+
+      // Titolo centrato e in grassetto
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.text('ATTESTAZIONE DI PRESENZA PER PRESTAZIONE', 105, 60, { align: 'center' });
+      doc.text('SANITARIA O ACCOMPAGNAMENTO', 105, 68, { align: 'center' });
+
+      // Testo principale
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(12);
+
+      // Testo giustificato
+      const testo = `Si attesta che la Sig.ra/Sig.re ${nomePaziente} nato a ${luogoNascita} il ${dataNascitaFormattata} C.F ${codiceFiscale}, per il mese di ${mese}, nelle giornate del ${giornoSettimana}, alle ore ${orario}, si recherà presso il mio studio privato, sito in ${studio === 'Castelnuovo di Porto' ? 'Via Roma 108 a Castelnuovo di Porto' : 'Via Salaria 229 a Monterotondo'}`;
+
+      const righe = doc.splitTextToSize(testo, 170);
+      doc.text(righe, 20, 85, { align: 'justify' });
+
+      // Checkbox per prestazione sanitaria
+      doc.rect(20, 115, 5, 5);
+      doc.text('- sottoporsi a prestazione sanitaria', 30, 119);
+
+      // Checkbox e testo per accompagnamento
+      doc.rect(20, 125, 5, 5);
+      doc.text('- accompagnare', 30, 129);
+
+      if (accompagnatore && relazioneParentela) {
+        const testoAccompagnatore = `il/la Sig./Sig.ra ${accompagnatore} per effettuare la prestazione sanitaria in qualità di ${relazioneParentela}`;
+        doc.text(testoAccompagnatore, 30, 139);
+      }
+
+      // Data e luogo
+      doc.text(`${studio}, li ${dataPermessoFormattata}`, 20, 160);
+
+      // Aggiungi la firma (ridimensionata e posizionata più in basso)
+      await new Promise(r => firma.onload = r);
+      doc.addImage(firma, 'PNG', 120, 170, 50, 25);
+
+      // Testo "Firma" e nome dottoressa
+      doc.text('Firma', 120, 165);
+      doc.text('Dott.ssa Francesca Mola', 120, 200);
+
+      // Nota finale
+      doc.setFontSize(10);
+      doc.text('Si rilascia su richiesta dell'interessato/a per gli usi consentiti dalla legge.', 20, 210);
+
+      // Salva il documento
+      doc.save(`permesso_${nomePaziente.replace(/\s+/g, '_')}.pdf`);
+    }
+
+    async function generaRelazione() {
+      const formato = document.getElementById('formatoRelazione').value;
+      if (formato === 'pdf') {
+        await generaRelazionePDF();
+      } else {
+        await generaRelazioneDOCX();
+      }
+    }
+
+    async function generaRelazionePDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      // Carica il logo e la firma
+      const logo = new Image();
+      logo.src = 'logo.png';
+      const firma = new Image();
+      firma.src = 'firma.png';
+
+      // Raccogli i dati dal form
+      const datiAnagrafici = document.getElementById('datiAnagrafici').value;
+      const motivoInvio = document.getElementById('motivoInvio').value;
+      const quadroDiagnostico = document.getElementById('quadroDiagnostico').value;
+      const percorso = document.getElementById('percorso').value;
+      const conclusione = document.getElementById('conclusione').value;
+      const indicazioni = document.getElementById('indicazioni').value;
+      const studio = document.getElementById('luogoStudio').value;
+      const data = new Date(document.getElementById('dataRelazione').value);
+      const dataFormattata = `${data.getDate().toString().padStart(2, '0')}.${(data.getMonth() + 1).toString().padStart(2, '0')}.${data.getFullYear()}`;
+
+      // Imposta il font e la dimensione
+      doc.setFont('helvetica');
+      doc.setFontSize(12);
+
+      // Aggiungi il logo (ridimensionato e centrato)
+      await new Promise(r => logo.onload = r);
+      doc.addImage(logo, 'PNG', (210 - 40) / 2, 10, 40, 40);
+
+      // Titolo
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.text('RELAZIONE CLINICA PSICOTERAPEUTICA', 105, 60, { align: 'center' });
+
+      // Contenuto
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(12);
+      let y = 80;
+
+      // Funzione per aggiungere sezioni con titoli in grassetto
+      function aggiungiSezione(titolo, contenuto, y) {
+        doc.setFont('helvetica', 'bold');
+        doc.text(titolo, 20, y);
+        doc.setFont('helvetica', 'normal');
+        const righe = doc.splitTextToSize(contenuto, 170);
+        doc.text(righe, 20, y + 7);
+        return y + 7 + (righe.length * 7);
+      }
+
+      y = aggiungiSezione('Dati anagrafici:', datiAnagrafici, y);
+      y = aggiungiSezione('Motivo dell'invio:', motivoInvio, y + 10);
+      y = aggiungiSezione('Quadro diagnostico e osservazioni cliniche:', quadroDiagnostico, y + 10);
+      y = aggiungiSezione('Percorso psicoterapeutico:', percorso, y + 10);
+      y = aggiungiSezione('Conclusione del trattamento:', conclusione, y + 10);
+      y = aggiungiSezione('Indicazioni e raccomandazioni:', indicazioni, y + 10);
+
+      // Data e luogo
+      doc.text(`${studio}, li ${dataFormattata}`, 20, y + 20);
+
+      // Aggiungi la firma (ridimensionata e posizionata più in basso)
+      await new Promise(r => firma.onload = r);
+      doc.addImage(firma, 'PNG', 120, y + 25, 50, 25);
+
+      // Testo "Firma" e nome dottoressa
+      doc.text('Firma', 120, y + 20);
+      doc.text('Dott.ssa Francesca Mola', 120, y + 55);
+
+      // Nota finale
+      doc.setFontSize(10);
+      doc.text('Si rilascia su richiesta dell'interessato/a per gli usi consentiti dalla legge.', 20, y + 65);
+
+      // Estrai il nome del paziente dai dati anagrafici
+      const nomePaziente = datiAnagrafici.split('\n')[0].trim();
+      
+      // Salva il documento
+      doc.save(`relazione_${nomePaziente.replace(/\s+/g, '_')}.pdf`);
+    }
+
+    async function generaRelazioneDOCX() {
+      const { Document, Paragraph, TextRun, AlignmentType, HeadingLevel } = docx;
+
+      // Raccogli i dati dal form
+      const datiAnagrafici = document.getElementById('datiAnagrafici').value;
+      const motivoInvio = document.getElementById('motivoInvio').value;
+      const quadroDiagnostico = document.getElementById('quadroDiagnostico').value;
+      const percorso = document.getElementById('percorso').value;
+      const conclusione = document.getElementById('conclusione').value;
+      const indicazioni = document.getElementById('indicazioni').value;
+      const studio = document.getElementById('luogoStudio').value;
+      const data = new Date(document.getElementById('dataRelazione').value);
+      const dataFormattata = `${data.getDate().toString().padStart(2, '0')}.${(data.getMonth() + 1).toString().padStart(2, '0')}.${data.getFullYear()}`;
+
+      // Crea il documento
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: [
+            new Paragraph({
+              text: "RELAZIONE CLINICA PSICOTERAPEUTICA",
+              heading: HeadingLevel.HEADING_1,
+              alignment: AlignmentType.CENTER
+            }),
+            new Paragraph({
+              text: "Dati anagrafici:",
+              heading: HeadingLevel.HEADING_2
+            }),
+            new Paragraph({ text: datiAnagrafici }),
+            new Paragraph({
+              text: "Motivo dell'invio:",
+              heading: HeadingLevel.HEADING_2
+            }),
+            new Paragraph({ text: motivoInvio }),
+            new Paragraph({
+              text: "Quadro diagnostico e osservazioni cliniche:",
+              heading: HeadingLevel.HEADING_2
+            }),
+            new Paragraph({ text: quadroDiagnostico }),
+            new Paragraph({
+              text: "Percorso psicoterapeutico:",
+              heading: HeadingLevel.HEADING_2
+            }),
+            new Paragraph({ text: percorso }),
+            new Paragraph({
+              text: "Conclusione del trattamento:",
+              heading: HeadingLevel.HEADING_2
+            }),
+            new Paragraph({ text: conclusione }),
+            new Paragraph({
+              text: "Indicazioni e raccomandazioni:",
+              heading: HeadingLevel.HEADING_2
+            }),
+            new Paragraph({ text: indicazioni }),
+            new Paragraph({
+              text: `${studio}, li ${dataFormattata}`,
+              alignment: AlignmentType.LEFT
+            }),
+            new Paragraph({
+              text: "Firma",
+              alignment: AlignmentType.RIGHT
+            }),
+            new Paragraph({
+              text: "Dott.ssa Francesca Mola",
+              alignment: AlignmentType.RIGHT
+            }),
+            new Paragraph({
+              text: "Si rilascia su richiesta dell'interessato/a per gli usi consentiti dalla legge.",
+              alignment: AlignmentType.LEFT
+            })
+          ]
+        }]
+      });
+
+      // Estrai il nome del paziente dai dati anagrafici
+      const nomePaziente = datiAnagrafici.split('\n')[0].trim();
+      
+      // Genera il blob e scarica il file
+      const buffer = await docx.Packer.toBlob(doc);
+      saveAs(buffer, `relazione_${nomePaziente.replace(/\s+/g, '_')}.docx`);
+    }
+  </script>
+</body>
+</html>
